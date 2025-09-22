@@ -1,17 +1,14 @@
 # SMS Messaging Microservice
 
-A Java microservice built with **Quarkus** that simulates an SMS messaging platform.
+A Java microservice built with Quarkus that simulates an SMS messaging platform.
 
----
+Features
 
-## Features
-
-* **REST API Endpoints**
+REST API Endpoints
     * `POST /messages` — send a new SMS message
     * `GET  /messages` — list all messages
     * `GET  /messages/{id}` — retrieve a single message by ID
     * `GET  /messages/search?sourceNumber=...&destinationNumber=...` — search by phone numbers
-    * `DELETE /messages` — delete all messages
     * `DELETE /messages/{id}` — delete a message by ID
 
 * **Validation & Error Handling**

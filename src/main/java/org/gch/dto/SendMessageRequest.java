@@ -6,16 +6,16 @@ import jakarta.validation.constraints.Size;
 
 public class SendMessageRequest {
 
-    @NotBlank(message = "sourceNumber is required")
-    @Pattern(regexp = "\\d{3,15}", message = "sourceNumber must be 3-15 digits")
+    @NotBlank
+    @Pattern(regexp = "\\d{8,15}", message = "Source number must be 8-15 digits")
     private String sourceNumber;
 
-    @NotBlank(message = "destinationNumber is required")
-    @Pattern(regexp = "\\d{3,15}", message = "destinationNumber must be 3-15 digits")
+    @NotBlank
+    @Pattern(regexp = "\\d{8,15}", message = "Destination number must be 8-15 digits")
     private String destinationNumber;
 
-    @NotBlank(message = "content is required")
-    @Size(max = 160, message = "content must be at most 160 characters")
+    @NotBlank
+    @Size(max = 160, message = "Content cannot exceed 160 characters")
     private String content;
 
     public SendMessageRequest() {}

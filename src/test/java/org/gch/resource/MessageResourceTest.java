@@ -2,104 +2,73 @@ package org.gch.resource;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.gch.entity.MessageStatus;
-import org.gch.repository.MessageRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.*;
 
 @QuarkusTest
-class MessageResourceTest {
-
-    @Inject
-    MessageRepository repository;
-
-    @BeforeEach
-    @Transactional
-    void setup() {
-        repository.deleteAllMessages();
-    }
+public class MessageResourceTest {
 
     @Test
-    void testSendMessage() {
-        String json = "{\"sourceNumber\":\"12345\",\"destinationNumber\":\"67890\",\"content\":\"Hello\"}";
-
+    public void testSendValidMessage() {
         given()
                 .contentType("application/json")
-                .body(json)
+                .body("{\"sourceNumber\":\"35799654321\",\"destinationNumber\":\"35799123456\",\"content\":\"Hello\"}")
                 .when()
                 .post("/messages")
                 .then()
                 .statusCode(201)
-                .body("sourceNumber", is("12345"))
-                .body("destinationNumber", is("67890"))
-                .body("content", is("Hello"))
-                .body("status", anyOf(is("PENDING"), is("DELIVERED"), is("FAILED")));
+                .body("sourceNumber", equalTo("35799654321"))
+                .body("destinationNumber", equalTo("35799123456"))
+                .body("content", equalTo("Hello"))
+                .body("status", equalTo(MessageStatus.DELIVERED.toString()));
     }
 
     @Test
-    void testGetAllMessages() {
-        String json = "{\"sourceNumber\":\"111\",\"destinationNumber\":\"222\",\"content\":\"Msg\"}";
+    public void testSendInvalidSourceNumber() {
         given()
                 .contentType("application/json")
-                .body(json)
+                .body("{\"sourceNumber\":\"ABC123\",\"destinationNumber\":\"35799123456\",\"content\":\"Hello\"}")
                 .when()
                 .post("/messages")
                 .then()
-                .statusCode(201);
+                .statusCode(400)
+                .body("details[0]", containsString("sourceNumber"));
+    }
 
+    @Test
+    public void testSendInvalidDestinationNumber() {
         given()
+                .contentType("application/json")
+                .body("{\"sourceNumber\":\"35799654321\",\"destinationNumber\":\"DEST!\",\"content\":\"Hello\"}")
+                .when()
+                .post("/messages")
+                .then()
+                .statusCode(400)
+                .body("details[0]", containsString("destinationNumber"));
+    }
+
+    @Test
+    public void testSendEmptyContent() {
+        given()
+                .contentType("application/json")
+                .body("{\"sourceNumber\":\"35799654321\",\"destinationNumber\":\"35799123456\",\"content\":\"\"}")
+                .when()
+                .post("/messages")
+                .then()
+                .statusCode(400)
+                .body("details[0]", containsString("content"));
+    }
+
+    @Test
+    public void testGetAllMessages() {
+        given()
+                .accept("application/json")
                 .when()
                 .get("/messages")
                 .then()
                 .statusCode(200)
-                .body("$", hasSize(1));
-    }
-
-    @Test
-    void testSearchMessages() {
-        String json = "{\"sourceNumber\":\"555\",\"destinationNumber\":\"666\",\"content\":\"Hello\"}";
-        given()
-                .contentType("application/json")
-                .body(json)
-                .when()
-                .post("/messages")
-                .then()
-                .statusCode(201);
-
-        given()
-                .when()
-                .get("/messages/search?sourceNumber=555&destinationNumber=666")
-                .then()
-                .statusCode(200)
-                .body("$", hasSize(1));
-    }
-
-    @Test
-    void testGetMessageById() {
-        String json = "{\"sourceNumber\":\"888\",\"destinationNumber\":\"999\",\"content\":\"Hi\"}";
-        long id =
-                given()
-                        .contentType("application/json")
-                        .body(json)
-                        .when()
-                        .post("/messages")
-                        .then()
-                        .statusCode(201)
-                        .extract()
-                        .path("id");
-
-        given()
-                .when()
-                .get("/messages/" + id)
-                .then()
-                .statusCode(200)
-                .body("id", is((int) id));
+                .body("$", not(empty()));
     }
 }

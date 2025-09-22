@@ -1,8 +1,14 @@
-# Ignore everything except what's needed
-*
+# Ignore build outputs and IDE files
+target/
+.idea/
+.vscode/
+.mvn/
+*.iml
+
+# Ignore Git metadata
+.git/
+.gitignore
+
+# Include what's needed
 !pom.xml
 !src/
-!target/*-runner
-!target/*-runner.jar
-!target/lib/*
-!target/quarkus-app/*
